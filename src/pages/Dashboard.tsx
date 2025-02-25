@@ -5,16 +5,39 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
   Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell 
 } from "recharts";
-import { Download, AlertCircle, Activity, Search, Database } from "lucide-react";
-import { systemHealth, eventTrends, threatCategories } from "@/data/sampleData";
+import { 
+  Download, AlertCircle, Activity, Search, Database, 
+  Shield, Users, Globe, Server 
+} from "lucide-react";
+import { systemHealth, eventTrends, threatCategories, sampleAlerts, sampleEvents } from "@/data/sampleData";
 
 const COLORS = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4"];
 
+const topViolators = [
+  { ip: "192.168.1.100", count: 156, type: "Brute Force" },
+  { ip: "192.168.1.101", count: 89, type: "SQL Injection" },
+  { ip: "192.168.1.102", count: 67, type: "XSS Attempts" },
+  { ip: "192.168.1.103", count: 45, type: "File Inclusion" },
+];
+
+const geoDistribution = [
+  { country: "United States", attacks: 1245 },
+  { country: "China", attacks: 856 },
+  { country: "Russia", attacks: 645 },
+  { country: "Brazil", attacks: 433 },
+];
+
 const Dashboard = () => {
+  const criticalAlerts = sampleAlerts.filter(alert => alert.severity === "critical");
+  const recentEvents = sampleEvents.slice(0, 5);
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-semibold tracking-tight">Security Dashboard</h1>
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Security Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Real-time security monitoring and analytics</p>
+        </div>
         <Button variant="outline">
           <Download className="mr-2 h-4 w-4" />
           Export Report
@@ -61,6 +84,47 @@ const Dashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold">156</div>
             <p className="text-xs text-muted-foreground">6 require attention</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Security Status Row */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="col-span-2">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Top Security Violations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {topViolators.map((violator, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{violator.ip}</p>
+                    <p className="text-xs text-muted-foreground">{violator.type}</p>
+                  </div>
+                  <div className="text-sm font-medium">{violator.count} attempts</div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-2">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Geographic Distribution</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {geoDistribution.map((geo, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <span>{geo.country}</span>
+                  </div>
+                  <div className="text-sm font-medium">{geo.attacks} attacks</div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -141,28 +205,66 @@ const Dashboard = () => {
 
         <Card className="p-4">
           <CardHeader>
-            <CardTitle>Recent Critical Alerts</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Recent Critical Alerts</CardTitle>
+              <Button variant="ghost" size="sm" className="text-xs">View All</Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Ransomware Activity Detected</p>
-                  <p className="text-sm text-muted-foreground">Windows Server 2019</p>
+              {criticalAlerts.slice(0, 3).map((alert) => (
+                <div key={alert.id} className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{alert.title}</p>
+                    <p className="text-sm text-muted-foreground">{alert.source}</p>
+                  </div>
+                  <Button variant="destructive" size="sm">Investigate</Button>
                 </div>
-                <Button variant="destructive" size="sm">Investigate</Button>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Brute Force Attack</p>
-                  <p className="text-sm text-muted-foreground">Ubuntu Web Server</p>
-                </div>
-                <Button variant="destructive" size="sm">Investigate</Button>
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Recent Events Table */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Recent Events</CardTitle>
+            <Button variant="ghost" size="sm">View All Events</Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {recentEvents.map((event) => (
+              <div
+                key={event.id}
+                className="flex items-center justify-between p-3 bg-muted rounded-lg"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Server className="h-4 w-4 text-muted-foreground" />
+                    <p className="font-medium">{event.source}</p>
+                  </div>
+                  <p className="text-sm">{event.description}</p>
+                  <div className="flex gap-2 text-xs text-muted-foreground">
+                    <span>{event.type}</span>
+                    <span>•</span>
+                    <span>{new Date(event.timestamp).toLocaleString()}</span>
+                  </div>
+                </div>
+                <Shield className={`h-4 w-4 ${
+                  event.severity === "high" 
+                    ? "text-red-500" 
+                    : event.severity === "medium"
+                    ? "text-yellow-500"
+                    : "text-blue-500"
+                }`} />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
